@@ -4,26 +4,24 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.job4j.domain.Person;
-import ru.job4j.repository.PersonRepository;
+import ru.job4j.service.PersonService;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 
 @RestController
 @RequestMapping("/person")
 public class PersonController {
-    private final PersonRepository persons;
+    private final PersonService persons;
 
-    public PersonController(final PersonRepository persons) {
+    public PersonController(final PersonService persons) {
         this.persons = persons;
     }
 
     @GetMapping("/")
     public List<Person> findAll() {
-        List<Person> result = new ArrayList<>();
-        this.persons.findAll().forEach(result::add);
-        return result;
+        return persons.findAll();
     }
 
     @GetMapping("/{id}")
@@ -45,15 +43,26 @@ public class PersonController {
 
     @PutMapping("/")
     public ResponseEntity<Void> update(@RequestBody Person person) {
+        if (!persons.existsById(person.getId())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
         this.persons.save(person);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {
+        if (!persons.existsById(id)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
         Person person = new Person();
         person.setId(id);
         this.persons.delete(person);
         return ResponseEntity.ok().build();
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Void> onRepositoryException(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }
