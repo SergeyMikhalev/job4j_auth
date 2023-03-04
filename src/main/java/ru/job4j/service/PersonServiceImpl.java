@@ -1,16 +1,18 @@
 package ru.job4j.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import ru.job4j.domain.Person;
 import ru.job4j.repository.PersonRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 public class PersonServiceImpl implements PersonService {
+    public static final String FORBIDDEN_LOGIN = "ZXC180";
     private final PersonRepository repository;
 
     @Override
@@ -20,12 +22,19 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public Person save(Person person) {
+        if (FORBIDDEN_LOGIN.equals(person.getLogin())) {
+            throw new IllegalArgumentException("Запрещенный логин!");
+        }
         return repository.save(person);
     }
 
     @Override
-    public Optional<Person> findById(Integer id) {
-        return repository.findById(id);
+    public Person findById(Integer id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Не удалось найти персону с id =" + id)
+                );
     }
 
     @Override

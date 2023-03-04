@@ -7,7 +7,7 @@ import ru.job4j.domain.Person;
 import ru.job4j.service.PersonService;
 
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Objects;
 
 
 @RestController
@@ -26,15 +26,14 @@ public class PersonController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Person> findById(@PathVariable int id) {
-        var person = this.persons.findById(id);
-        return new ResponseEntity<>(
-                person.orElse(new Person()),
-                person.isPresent() ? HttpStatus.OK : HttpStatus.NOT_FOUND
-        );
+        return new ResponseEntity<>(persons.findById(id), HttpStatus.OK);
     }
 
     @PostMapping("/")
     public ResponseEntity<Person> create(@RequestBody Person person) {
+        if (Objects.isNull(person.getPassword())) {
+            throw new NullPointerException("from person controller create");
+        }
         return new ResponseEntity<>(
                 this.persons.save(person),
                 HttpStatus.CREATED
@@ -43,6 +42,9 @@ public class PersonController {
 
     @PutMapping("/")
     public ResponseEntity<Void> update(@RequestBody Person person) {
+        if (Objects.isNull(person.getPassword())) {
+            throw new NullPointerException("from person controller update");
+        }
         if (!persons.existsById(person.getId())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
@@ -61,8 +63,9 @@ public class PersonController {
         return ResponseEntity.ok().build();
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Void> onRepositoryException(RuntimeException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> onRepositoryException(RuntimeException e) {
+        return new ResponseEntity<>(e.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
