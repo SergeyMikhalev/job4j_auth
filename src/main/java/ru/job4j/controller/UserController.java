@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.job4j.domain.Person;
 import ru.job4j.service.PersonService;
 
-import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -27,8 +26,4 @@ public class UserController {
         users.save(person);
     }
 
-    @GetMapping("/all")
-    public List<Person> findAll() {
-        return users.findAll();
-    }
 }
