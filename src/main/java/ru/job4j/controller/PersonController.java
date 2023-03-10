@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.job4j.domain.Person;
+import ru.job4j.dto.PersonLoginUpdate;
 import ru.job4j.service.PersonService;
 
 import java.util.List;
@@ -50,6 +51,11 @@ public class PersonController {
         }
         this.persons.save(person);
         return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/")
+    public ResponseEntity<Person> updateLogin(@RequestBody PersonLoginUpdate update) {
+        return new ResponseEntity<>(persons.updateLogin(update), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")

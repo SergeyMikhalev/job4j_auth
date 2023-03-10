@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import ru.job4j.domain.Person;
+import ru.job4j.dto.PersonLoginUpdate;
 import ru.job4j.repository.PersonRepository;
 
 import java.util.List;
@@ -45,5 +46,15 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public boolean existsById(Integer id) {
         return repository.existsById(id);
+    }
+
+    @Override
+    public Person updateLogin(PersonLoginUpdate update) {
+        if (!update.getNewLogin().equals(update.getConfirmedLogin())) {
+            throw new IllegalArgumentException("Переданные данные по обновлению логина не валидны.");
+        }
+        Person person = findById(update.getId());
+        person.setLogin(update.getNewLogin());
+        return save(person);
     }
 }
